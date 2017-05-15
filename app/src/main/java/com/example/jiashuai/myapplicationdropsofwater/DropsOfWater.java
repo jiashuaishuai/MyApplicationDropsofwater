@@ -18,8 +18,10 @@ import android.view.View;
  */
 
 public class DropsOfWater extends View {
-    private int frame = 3;//
+    private int frame = 0;//边框宽度
     private Paint framePaint;//边框画笔
+    private int shadow = 3;//阴影宽度
+    private Paint shadowPaint;//阴影
     private static final String TAG = "DropsOfWater";
     private int maxD = 50;
     private Point maxCentral, smallCentral;//两圆心
@@ -63,17 +65,25 @@ public class DropsOfWater extends View {
         mPaint.setColor(Color.parseColor("#a1a1a1"));
         mPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
-        framePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        framePaint.setDither(true);
-        framePaint.setStrokeCap(Paint.Cap.ROUND);
-        framePaint.setColor(Color.parseColor("#dcdcdc"));
-        framePaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
         //贝塞尔曲线画笔
         mBezierPath = new Path();
         mBezierPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         mBezierPaint.setColor(Color.parseColor("#a1a1a1"));
         mBezierPaint.setStyle(Paint.Style.FILL);
+
+        //边框
+        framePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        framePaint.setDither(true);
+        framePaint.setStrokeCap(Paint.Cap.ROUND);
+        framePaint.setColor(Color.parseColor("#666666"));
+        framePaint.setStyle(Paint.Style.FILL_AND_STROKE);
+//阴影
+        shadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        shadowPaint.setDither(true);
+        shadowPaint.setStrokeCap(Paint.Cap.ROUND);
+        shadowPaint.setColor(Color.parseColor("#666666"));
+        shadowPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
         leftStartPoint = new Point();//大圆圆心.x-半径，大圆圆心.y
         leftEndPoint = new Point();//小圆圆心.x-小圆半径，小圆.y
@@ -89,6 +99,7 @@ public class DropsOfWater extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         drowFrame(canvas);
+        drowShadow(canvas);
         drowDrops(canvas);
 
     }
@@ -121,6 +132,21 @@ public class DropsOfWater extends View {
         mBezierPath.quadTo(leftAssPoint.x - frame, leftAssPoint.y, leftStartPoint.x - frame, leftStartPoint.y);
         canvas.drawPath(mBezierPath, framePaint);
 
+    }
+
+    //绘制阴影
+    private void drowShadow(Canvas canvas) {
+        //绘制圆
+        canvas.drawCircle(maxCentral.x + shadow, maxCentral.y, maxCircleRadius, shadowPaint);
+        canvas.drawCircle(smallCentral.x + shadow, smallCentral.y, smallCircleRadius, shadowPaint);
+        mBezierPath.reset();
+        //绘制曲线
+        mBezierPath.moveTo(rightStartPoint.x + shadow, rightStartPoint.y);
+        mBezierPath.quadTo(rightAssPoint.x + shadow, rightAssPoint.y, rightEndPoint.x + shadow, rightEndPoint.y);
+
+        mBezierPath.lineTo(leftEndPoint.x, leftEndPoint.y);
+        mBezierPath.quadTo(leftAssPoint.x, leftAssPoint.y, leftStartPoint.x, leftStartPoint.y);
+        canvas.drawPath(mBezierPath, shadowPaint);
     }
 
     //计算坐标
