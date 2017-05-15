@@ -2,8 +2,11 @@ package com.example.jiashuai.myapplicationdropsofwater;
 
 import android.animation.ObjectAnimator;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Point;
@@ -18,20 +21,25 @@ import android.view.View;
  */
 
 public class DropsOfWater extends View {
+    private static final String TAG = "DropsOfWater";
     private int frame = 0;//边框宽度
     private Paint framePaint;//边框画笔
     private int shadow = 3;//阴影宽度
     private Paint shadowPaint;//阴影
-    private static final String TAG = "DropsOfWater";
-    private int maxD = 80;
-    private Point maxCentral, smallCentral;//两圆心
-    private Paint mPaint;//画笔
+
+
+    private int maximumCircleRadius = 80;//最大圆半径
+    private int maxDistance = maximumCircleRadius * 2 - 15;//最大滑动距离
+
+
+    private Paint mPaint;//两圆画笔
+    private Paint mBezierPaint;//贝塞尔曲线画笔
     private int maxCircleRadius, smallCircleRadius;//俩圆半径
+    private Point maxCentral, smallCentral;//两圆心
     private Point leftStartPoint, leftEndPoint, leftAssPoint;//左边曲线
     private Point rightStartPoint, rightEndPoint, rightAssPoint;//右边曲线
     private Path mBezierPath;//曲线路径
-    private Paint mBezierPaint;//
-    private int slidingDistance = 0;
+    private int slidingDistance = 0;//当前滑动距离
 
     public void setSlidingDistance(int slidingDistance) {
         this.slidingDistance = slidingDistance;
@@ -99,12 +107,14 @@ public class DropsOfWater extends View {
         initPoint();
     }
 
+
     @Override
     protected void onDraw(Canvas canvas) {
+
         drowFrame(canvas);
         drowShadow(canvas);
         drowDrops(canvas);
-
+        drowRefreshIcon(canvas);
     }
 
     private void drowDrops(Canvas canvas) {
@@ -152,12 +162,25 @@ public class DropsOfWater extends View {
         canvas.drawPath(mBezierPath, shadowPaint);
     }
 
+    //绘制刷新图片
+    private void drowRefreshIcon(Canvas canvas) {
+        Bitmap bitmap = BitmapFactory.decodeResource(getContext().getResources(), R.mipmap.default_ptr_rotate);
+        float bw = bitmap.getWidth();//这里必须是float否则bw/bh为0
+        float bh = bitmap.getHeight();
+        bitmap = Bitmap.createScaledBitmap(bitmap, (int) (maxCircleRadius * (bw / bh)), (int) (maxCircleRadius * (bh / bw)), true);//按比例设置bitmap大小
+        float deg = slidingDistance / (float) (maxDistance);//计算滑动比例
+        Matrix matrix = new Matrix();
+        matrix.setRotate(360 * deg, bw / 2, bh / 2);//设置旋转角度，以bitmap为中心旋转
+        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);//设置新的bitmap
+        canvas.drawBitmap(bitmap, maxCentral.x - bitmap.getWidth() / 2, maxCentral.y - bitmap.getHeight() / 2, mPaint);//绘制
+    }
+
     //计算坐标
     private void initPoint() {
-        slidingDistance = Math.min(slidingDistance, maxD * 2 - 15);
+        slidingDistance = Math.min(slidingDistance, maxDistance);
         smallCentral.y = maxCentral.y + slidingDistance;
-        maxCircleRadius = maxD - slidingDistance / 4;//大圆的半径
-        smallCircleRadius = (int) (maxD - slidingDistance / 2.2);//小圆半径
+        maxCircleRadius = maximumCircleRadius - slidingDistance / 4;//大圆的半径
+        smallCircleRadius = (int) (maximumCircleRadius - slidingDistance / 2.2);//小圆半径
         ///////两条贝塞尔曲线各三点
         leftStartPoint.set(maxCentral.x - maxCircleRadius, maxCentral.y);//大圆圆心.x-半径，大圆圆心.y
         leftEndPoint.set(smallCentral.x - smallCircleRadius, smallCentral.y);//小圆圆心.x-小圆半径，小圆.y
@@ -184,14 +207,14 @@ public class DropsOfWater extends View {
      * 启动变幻测试
      */
     public void start() {
-        ObjectAnimator animator = ObjectAnimator.ofInt(this, "slidingDistance", 0, maxD*2);
+        ObjectAnimator animator = ObjectAnimator.ofInt(this, "slidingDistance", 0, maxDistance);
         animator.setDuration(500);
         animator.start();
 
     }
 
     public void end() {
-        ObjectAnimator animator = ObjectAnimator.ofInt(this, "slidingDistance", maxD*2, 0);
+        ObjectAnimator animator = ObjectAnimator.ofInt(this, "slidingDistance", maxDistance, 0);
         animator.setDuration(500);
         animator.start();
 
@@ -199,7 +222,7 @@ public class DropsOfWater extends View {
 
     public void end(int dis) {
         ObjectAnimator animator = ObjectAnimator.ofInt(this, "slidingDistance", dis, 0);
-        animator.setDuration(100);
+        animator.setDuration(300);
         animator.start();
 
     }
