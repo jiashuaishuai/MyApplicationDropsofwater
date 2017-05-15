@@ -9,6 +9,7 @@ import android.graphics.Path;
 import android.graphics.Point;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 
@@ -17,6 +18,7 @@ import android.view.View;
  */
 
 public class DropsOfWater extends View {
+    private static final String TAG = "DropsOfWater";
     private int maxD = 50;
     private Point maxCentral, smallCentral;//两圆心
     private Paint mPaint;//画笔
@@ -134,8 +136,41 @@ public class DropsOfWater extends View {
 
     }
 
+    public void end(int dis) {
+        ObjectAnimator animator = ObjectAnimator.ofInt(this, "slidingDistance", dis, 0);
+        animator.setDuration(100);
+        animator.start();
+
+    }
+
+
+    private int downPoint;
+    private int movePoint;
+    private int moveDis;
+    private int upPoint;
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        return super.onTouchEvent(event);
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                downPoint = (int) event.getY();
+                Log.e(TAG, "downPoint   " + downPoint);
+                break;
+            case MotionEvent.ACTION_MOVE:
+                movePoint = (int) event.getY();
+                slidingDistance = (int) ((movePoint - downPoint) * 0.3);
+                slidingDistance = Math.max(slidingDistance, 0);
+                Log.e(TAG, "movePoint   " + movePoint);
+                Log.e(TAG, "moveDis   " + moveDis);
+                initPoint();
+                break;
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                upPoint = (int) event.getY();
+                Log.e(TAG, "upPoint   " + upPoint);
+                end(slidingDistance);
+                break;
+        }
+        return true;
     }
 }
