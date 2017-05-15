@@ -23,7 +23,7 @@ public class DropsOfWater extends View {
     private int shadow = 3;//阴影宽度
     private Paint shadowPaint;//阴影
     private static final String TAG = "DropsOfWater";
-    private int maxD = 50;
+    private int maxD = 80;
     private Point maxCentral, smallCentral;//两圆心
     private Paint mPaint;//画笔
     private int maxCircleRadius, smallCircleRadius;//俩圆半径
@@ -69,8 +69,10 @@ public class DropsOfWater extends View {
         //贝塞尔曲线画笔
         mBezierPath = new Path();
         mBezierPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        mBezierPaint.setDither(true);
+        mBezierPaint.setStrokeCap(Paint.Cap.ROUND);
         mBezierPaint.setColor(Color.parseColor("#a1a1a1"));
-        mBezierPaint.setStyle(Paint.Style.FILL);
+        mBezierPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
         //边框
         framePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
@@ -78,11 +80,12 @@ public class DropsOfWater extends View {
         framePaint.setStrokeCap(Paint.Cap.ROUND);
         framePaint.setColor(Color.parseColor("#666666"));
         framePaint.setStyle(Paint.Style.FILL_AND_STROKE);
-//阴影
+
+        //阴影
         shadowPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         shadowPaint.setDither(true);
         shadowPaint.setStrokeCap(Paint.Cap.ROUND);
-        shadowPaint.setColor(Color.parseColor("#666666"));
+        shadowPaint.setColor(Color.parseColor("#888888"));
         shadowPaint.setStyle(Paint.Style.FILL_AND_STROKE);
 
         leftStartPoint = new Point();//大圆圆心.x-半径，大圆圆心.y
@@ -153,8 +156,8 @@ public class DropsOfWater extends View {
     private void initPoint() {
         slidingDistance = Math.min(slidingDistance, maxD * 2 - 15);
         smallCentral.y = maxCentral.y + slidingDistance;
-        maxCircleRadius = maxD - slidingDistance / 3;//大圆的半径
-        smallCircleRadius = maxD - slidingDistance / 2;//小圆半径
+        maxCircleRadius = maxD - slidingDistance / 4;//大圆的半径
+        smallCircleRadius = (int) (maxD - slidingDistance / 2.2);//小圆半径
         ///////两条贝塞尔曲线各三点
         leftStartPoint.set(maxCentral.x - maxCircleRadius, maxCentral.y);//大圆圆心.x-半径，大圆圆心.y
         leftEndPoint.set(smallCentral.x - smallCircleRadius, smallCentral.y);//小圆圆心.x-小圆半径，小圆.y
