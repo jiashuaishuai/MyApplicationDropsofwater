@@ -184,14 +184,14 @@ public class DropsOfWater extends View {
      * 启动变幻测试
      */
     public void start() {
-        ObjectAnimator animator = ObjectAnimator.ofInt(this, "slidingDistance", 0, 100);
+        ObjectAnimator animator = ObjectAnimator.ofInt(this, "slidingDistance", 0, maxD*2);
         animator.setDuration(500);
         animator.start();
 
     }
 
     public void end() {
-        ObjectAnimator animator = ObjectAnimator.ofInt(this, "slidingDistance", 100, 0);
+        ObjectAnimator animator = ObjectAnimator.ofInt(this, "slidingDistance", maxD*2, 0);
         animator.setDuration(500);
         animator.start();
 
